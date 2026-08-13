@@ -1,0 +1,72 @@
+<view class="attendance-page safe-bottom">
+  <view class="tabs">
+    <view class="tab {{activeTab === 'punch' ? 'active' : ''}}" data-tab="punch" bindtap="switchTab">打卡</view>
+    <view class="tab {{activeTab === 'records' ? 'active' : ''}}" data-tab="records" bindtap="switchTab">打卡记录</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="skeleton card"></view>
+
+  <block wx:elif="{{activeTab === 'punch' && today}}">
+    <view class="today-card">
+      <view class="today-label">今日考勤</view>
+      <view class="today-date">{{today.work_date}}</view>
+      <view class="timeline">
+        <view class="timeline-item">
+          <view class="dot {{today.check_in ? 'done' : ''}}"></view>
+          <view class="timeline-content"><view class="timeline-title">上班打卡</view><view class="timeline-time">{{today.check_in ? today.check_in.display_time : '--:--'}}</view><view class="timeline-location">{{today.check_in.location_text || '等待首次打卡'}}</view></view>
+        </view>
+        <view class="timeline-line"></view>
+        <view class="timeline-item">
+          <view class="dot {{today.check_out ? 'done' : ''}}"></view>
+          <view class="timeline-content"><view class="timeline-title">下班打卡</view><view class="timeline-time">{{today.check_out ? today.check_out.display_time : '--:--'}}</view><view class="timeline-location">{{today.check_out.location_text || '当天最后一次打卡计为下班'}}</view></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="location-card card">
+      <view class="location-icon">位</view>
+      <view class="location-info"><view>当前位置</view><text wx:if="{{location}}">{{location.location_text}} · 精度约 {{location.accuracy}} 米</text><text wx:else>打卡前请先获取当前位置</text></view>
+      <button class="locate-button" loading="{{locating}}" bindtap="locate">重新定位</button>
+    </view>
+
+    <button class="punch-button" loading="{{punching}}" disabled="{{punching}}" bindtap="punch">
+      打卡
+      <text>{{location ? '将记录当前时间和位置' : '点击后获取当前位置'}}</text>
+    </button>
+    <view class="punch-tip">当天第一次打卡记为上班，最后一次打卡记为下班</view>
+  </block>
+
+  <block wx:elif="{{activeTab === 'records' && calendar}}">
+    <view class="month-header card">
+      <view class="month-arrow" data-offset="-1" bindtap="changeMonth">‹</view>
+      <picker mode="date" fields="month" value="{{month}}" bindchange="selectMonth">
+        <view class="month-select"><view class="month-title">{{monthTitle}}⌄</view><view class="month-subtitle">点击选择年月 · 缺卡日期可补卡</view></view>
+      </picker>
+      <view class="month-arrow" data-offset="1" bindtap="changeMonth">›</view>
+    </view>
+    <view class="summary-row">
+      <view><b>{{calendar.summary.complete}}</b><text>正常</text></view>
+      <view><b class="orange">{{calendar.summary.partial + calendar.summary.missing}}</b><text>缺卡</text></view>
+      <view><b class="blue">{{calendar.summary.pending}}</b><text>待审核</text></view>
+    </view>
+    <view class="calendar card">
+      <view class="week" wx:for="{{['日','一','二','三','四','五','六']}}" wx:key="*this">{{item}}</view>
+      <view class="day {{item.blank ? 'blank' : item.status}} {{item.is_today ? 'today' : ''}}" wx:for="{{calendarCells}}" wx:key="key" data-day="{{item}}" bindtap="selectDay">
+        <block wx:if="{{!item.blank}}"><view class="day-number">{{item.day}}</view><view class="day-status">{{item.status_text}}</view></block>
+      </view>
+    </view>
+    <view class="legend"><text><i class="normal"></i>正常</text><text><i class="missing"></i>缺卡</text><text><i class="pending"></i>补卡待审核</text></view>
+  </block>
+
+  <view wx:if="{{supplementVisible}}" class="modal-mask" bindtap="closeSupplement">
+    <view class="supplement-modal" catchtap="preventClose">
+      <view class="modal-title">申请补卡</view>
+      <view class="modal-date">{{selectedDay.date}}</view>
+      <view class="form-row"><text>补卡类型</text><picker range="{{supplementTypes}}" range-key="label" value="{{supplementTypeIndex}}" bindchange="changeSupplementType"><view class="picker-value">{{supplementTypes[supplementTypeIndex].label}} ›</view></picker></view>
+      <view class="form-row"><text>补卡时间</text><picker mode="time" value="{{supplementTime}}" bindchange="changeSupplementTime"><view class="picker-value">{{supplementTime}} ›</view></picker></view>
+      <view class="reason-label">补卡原因</view>
+      <textarea class="reason-input" maxlength="500" placeholder="请说明缺卡原因" value="{{supplementReason}}" bindinput="inputReason"></textarea>
+      <view class="modal-actions"><button bindtap="closeSupplement">取消</button><button class="submit" bindtap="submitSupplement">提交申请</button></view>
+    </view>
+  </view>
+</view>

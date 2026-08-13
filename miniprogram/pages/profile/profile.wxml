@@ -1,0 +1,26 @@
+<view class="profile-page safe-bottom">
+  <view wx:if="{{loading}}" class="skeleton card"></view>
+  <block wx:elif="{{user}}">
+    <view class="profile-hero">
+      <image wx:if="{{user.avatar_url}}" class="avatar" src="{{user.avatar_url}}" mode="aspectFill"></image>
+      <view wx:else class="avatar fallback">{{avatarText}}</view>
+      <view class="profile-info">
+        <view class="profile-name">{{user.real_name}}</view>
+        <view class="profile-meta">{{user.role_name}}<text wx:if="{{user.org_name}}"> · {{user.org_name}}</text></view>
+      </view>
+      <view class="edit" bindtap="editName">编辑</view>
+    </view>
+
+    <view class="menu card">
+      <view class="menu-item" bindtap="editName"><view class="menu-icon blue">名</view><text>个人资料</text><view class="arrow">›</view></view>
+      <view class="menu-item" data-name="我的任务" bindtap="showComingSoon"><view class="menu-icon green">任</view><text>我的任务</text><view class="arrow">›</view></view>
+      <view class="menu-item" data-name="消息设置" bindtap="showComingSoon"><view class="menu-icon orange">消</view><text>消息设置</text><view class="arrow">›</view></view>
+      <view class="menu-item" data-name="帮助与反馈" bindtap="showComingSoon"><view class="menu-icon gray">助</view><text>帮助与反馈</text><view class="arrow">›</view></view>
+    </view>
+
+    <view class="profile-footer">
+      <button class="logout" bindtap="logout">退出登录</button>
+      <view class="version">港审通 V0.1.0</view>
+    </view>
+  </block>
+</view>

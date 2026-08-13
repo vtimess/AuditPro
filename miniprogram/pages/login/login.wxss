@@ -1,0 +1,17 @@
+.login-page { min-height: 100vh; position: relative; overflow: hidden; padding: 150rpx 48rpx 180rpx; box-sizing: border-box; background: linear-gradient(165deg, #14384d 0%, #1b526c 45%, #f4f6f7 45.2%); }
+.harbor-lines { position: absolute; top: 170rpx; left: -80rpx; right: -80rpx; opacity: .18; transform: rotate(-7deg); }
+.harbor-lines view { height: 1rpx; margin: 38rpx 0; background: #d8edf5; }
+.brand-block { position: relative; color: #fff; text-align: center; margin-bottom: 105rpx; }
+.brand-mark { margin: 0 auto 20rpx; width: 108rpx; height: 108rpx; border-radius: 28rpx; background: #eff7f9; color: #173a50; display: flex; align-items: center; justify-content: center; font-size: 42rpx; font-weight: 900; box-shadow: 0 12rpx 30rpx rgba(4, 28, 41, .2); }
+.brand-name { font-size: 48rpx; font-weight: 700; letter-spacing: 10rpx; }
+.brand-en { margin-top: 6rpx; font-size: 18rpx; letter-spacing: 9rpx; color: #a7c5d2; }
+.brand-desc { margin-top: 24rpx; color: #d3e2e8; font-size: 24rpx; }
+.login-card { position: relative; padding: 54rpx 40rpx 42rpx; }
+.welcome-title { font-size: 38rpx; font-weight: 700; text-align: center; }
+.welcome-desc { margin: 14rpx 0 46rpx; color: #71808b; font-size: 24rpx; text-align: center; }
+.login-button { height: 92rpx; padding: 0; border-radius: 16rpx; color: #fff; background: #176c9b; display: flex; align-items: center; justify-content: center; font-size: 30rpx; font-weight: 600; line-height: 1; text-align: center; }
+.login-button[disabled] { color: #fff; background: #6b9db7; }
+.privacy { margin-top: 30rpx; display: flex; align-items: center; justify-content: center; gap: 12rpx; color: #7b8992; font-size: 21rpx; }
+.checkbox { width: 28rpx; height: 28rpx; border: 2rpx solid #aeb9bf; border-radius: 7rpx; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20rpx; }
+.checkbox.checked { border-color: #32947e; background: #32947e; }
+.login-footer { position: absolute; left: 48rpx; right: 48rpx; bottom: calc(80rpx + env(safe-area-inset-bottom)); text-align: center; color: #98a3a9; font-size: 20rpx; }

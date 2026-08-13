@@ -1,0 +1,21 @@
+<view class="workbench-page safe-bottom">
+  <view class="workbench-hero">
+    <view class="eyebrow">AUDITPRO WORKBENCH</view>
+    <view class="hero-title">工作台</view>
+    <view class="hero-desc">业务模块将按开发计划逐步开放</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="skeleton card"></view>
+  <block wx:else>
+    <view class="module-section" wx:for="{{groups}}" wx:key="name" wx:for-item="group">
+      <view class="section-title">{{group.name}}</view>
+      <view class="module-grid card">
+        <view class="module" wx:for="{{group.modules}}" wx:key="key" wx:for-item="module" data-key="{{module.key}}" data-enabled="{{module.enabled}}" data-name="{{module.name}}" bindtap="openModule">
+          <view class="module-icon">{{module.icon}}</view>
+          <view class="module-name">{{module.name}}</view>
+          <view class="module-status">{{module.status_text}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

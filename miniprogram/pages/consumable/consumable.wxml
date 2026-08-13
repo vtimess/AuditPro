@@ -1,0 +1,30 @@
+<view class="business-page safe-bottom">
+  <view class="tabs"><view class="tab {{activeTab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">采购台账</view><view class="tab {{activeTab === 'form' ? 'active' : ''}}" data-tab="form" bindtap="switchTab">新增采购</view></view>
+  <block wx:if="{{activeTab === 'list'}}">
+    <view class="toolbar card"><input placeholder="耗材名称或经办人" value="{{keyword}}" bindinput="inputKeyword" bindconfirm="loadRecords"/><button bindtap="loadRecords">查询</button></view>
+    <button class="export-button" bindtap="exportExcel">导出采购台账 Excel</button>
+    <view wx:if="{{!loading && !records.length}}" class="empty">暂无采购记录</view>
+    <view class="record-card card" wx:for="{{records}}" wx:key="id">
+      <view class="record-head"><b>{{item.item_name}}</b><text>¥{{item.total_amount}}</text></view>
+      <view class="tags"><text>{{item.category}}</text><text wx:if="{{item.is_manual_total}}" class="manual">总价已调整</text></view>
+      <view class="record-line">{{item.quantity}} {{item.unit}} × ¥{{item.unit_price}} · {{item.purchase_date}}</view><view class="record-line">{{item.region}} · 经办人 {{item.operator_name}}</view><view class="record-actions"><text data-id="{{item.id}}" bindtap="editRecord">修改</text><text data-id="{{item.id}}" bindtap="deleteRecord">删除</text></view>
+    </view>
+  </block>
+  <view wx:else class="form-card card">
+    <view class="form-title">{{editingId ? '修改采购记录' : '采购信息'}}</view>
+    <view class="field"><text>耗材类别 *</text><picker range="{{categories}}" value="{{categoryIndex}}" bindchange="changeCategory"><view class="picker">{{form.category}} ›</view></picker></view>
+    <view class="field"><text>耗材名称 *</text><input placeholder="请输入" data-field="item_name" value="{{form.item_name}}" bindinput="inputField"/></view>
+    <view class="field split"><view><text>数量 *</text><input type="digit" data-field="quantity" value="{{form.quantity}}" bindinput="inputAmount"/></view><view><text>单位 *</text><picker range="{{units}}" value="{{unitIndex}}" bindchange="changeUnit"><view class="picker">{{form.unit}} ›</view></picker></view></view>
+    <view class="field"><text>单价（元）*</text><input type="digit" placeholder="0.00" data-field="unit_price" value="{{form.unit_price}}" bindinput="inputAmount"/></view>
+    <view class="field"><text>总价（元）*</text><input type="digit" placeholder="0.00" value="{{form.total_amount}}" bindinput="inputTotal"/></view>
+    <view class="calculated">参考总价：¥{{calculatedTotal}} <text wx:if="{{manualTotal}}">已手工调整</text></view>
+    <view class="field vertical" wx:if="{{manualTotal}}"><text>调整原因 *</text><textarea placeholder="例如供应商优惠、运费或抹零" data-field="total_adjustment_reason" value="{{form.total_adjustment_reason}}" bindinput="inputField"/></view>
+    <view class="field"><text>采购日期 *</text><picker mode="date" value="{{form.purchase_date}}" bindchange="changeDate"><view class="picker">{{form.purchase_date}} ›</view></picker></view>
+    <view class="field"><text>所属地区 *</text><input data-field="region" value="{{form.region}}" bindinput="inputField"/></view>
+    <view class="field"><text>供应商</text><input placeholder="选填" data-field="supplier_name" value="{{form.supplier_name}}" bindinput="inputField"/></view>
+    <view class="field"><text>发票号码</text><input placeholder="选填" data-field="invoice_number" value="{{form.invoice_number}}" bindinput="inputField"/></view>
+    <view class="upload-title">发票照片</view><view class="image-grid"><view class="image-item" wx:for="{{invoiceImages}}" wx:key="*this"><image src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="previewImage"/><text data-index="{{index}}" bindtap="removeImage">×</text></view><view wx:if="{{invoiceImages.length < 9}}" class="add-image" bindtap="chooseInvoice">＋<text>拍照/相册</text></view></view>
+    <view class="field vertical"><text>采购说明</text><textarea placeholder="选填" data-field="description" value="{{form.description}}" bindinput="inputField"/></view>
+    <button class="primary" bindtap="submit">{{editingId ? '保存修改' : '保存采购记录'}}</button>
+  </view>
+</view>
