@@ -1,5 +1,14 @@
 const { API_BASE_URL } = require("../config/index");
 
+function getErrorMessage(data) {
+  const detail = data && (data.detail || data.message);
+  if (Array.isArray(detail) && detail.length) {
+    const first = detail[0] || {};
+    return String(first.msg || "提交数据校验失败").replace(/^Value error,\s*/, "");
+  }
+  return typeof detail === "string" ? detail : "服务请求失败";
+}
+
 function request(options) {
   const app = getApp();
   const token = wx.getStorageSync("access_token") || app.globalData.token;
@@ -22,8 +31,7 @@ function request(options) {
           return;
         }
         if (response.statusCode < 200 || response.statusCode >= 300) {
-          const message = response.data && (response.data.detail || response.data.message);
-          reject(new Error(message || "服务请求失败"));
+          reject(new Error(getErrorMessage(response.data)));
           return;
         }
         resolve(response.data.data);

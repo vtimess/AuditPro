@@ -18,10 +18,10 @@
   },
   "permission": {
     "scope.userLocation": {
-      "desc": "用于记录上下班打卡位置"
+      "desc": "用于记录工时打卡及安全检查现场位置"
     }
   },
-  "requiredPrivateInfos": ["getLocation"],
+  "requiredPrivateInfos": ["getLocation", "chooseLocation"],
   "tabBar": {
     "color": "#7B8992",
     "selectedColor": "#176C9B",

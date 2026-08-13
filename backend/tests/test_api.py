@@ -151,7 +151,8 @@ def test_police_purchase_and_safety_modules(monkeypatch):
         headers=headers,
         json={
             "person_name": "李四", "gender": "男", "id_card": "11010519491231002X",
-            "company_name": "镇江港务有限公司", "region": "镇江", "filing_status": "pending",
+            "company_name": "镇江港务有限公司", "region": "镇江", "mobile": "13800000000",
+            "filing_status": "pending",
         },
     )
     assert filing.status_code == 200, filing.text
@@ -182,6 +183,10 @@ def test_police_purchase_and_safety_modules(monkeypatch):
     assert purchase.status_code == 200, purchase.text
     assert purchase.json()["data"]["is_manual_total"] is True
     assert purchase.json()["data"]["calculated_total"] == "200.00"
+    purchase_id = purchase.json()["data"]["id"]
+    selected_export = client.get(f"/api/v1/consumable-purchases/export?ids={purchase_id}", headers=headers)
+    assert selected_export.status_code == 200
+    assert selected_export.headers["content-type"].startswith("application/vnd.openxmlformats")
 
     inspection = client.post(
         "/api/v1/safety-inspections",

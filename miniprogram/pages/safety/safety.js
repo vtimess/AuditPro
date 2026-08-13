@@ -8,7 +8,8 @@ const emptyHazard = () => ({ hazard_name: "", category: "人员行为", risk_lev
 Page({
   data: {
     activeTab: "check", form: emptyForm(), inspections: [], rectifications: [], loading: false,
-    inspectionImages: [], hazardVisible: false, hazard: emptyHazard(), editingHazardIndex: -1, hazardRiskIndex: 0, canReview: false,
+    inspectionImages: [], checkImages: {}, checkPhotoCounts: {}, hazardVisible: false,
+    hazard: emptyHazard(), editingHazardIndex: -1, hazardRiskIndex: 0, canReview: false,
     checkItems: [{key:"environment_status",name:"环境卫生"},{key:"equipment_status",name:"设备设施"},{key:"fire_status",name:"消防设施"},{key:"ppe_status",name:"劳保用品"},{key:"work_order_status",name:"作业秩序"}],
     statusOptions: [{ value: "normal", label: "正常" }, { value: "abnormal", label: "异常" }, { value: "not_applicable", label: "不适用" }],
     readinessOptions: [{ value: "normal", label: "正常" }, { value: "basic", label: "基本正常" }, { value: "rectification", label: "需整改" }],
@@ -24,8 +25,47 @@ Page({
   switchTab(e) { this.setData({ activeTab: e.currentTarget.dataset.tab }); },
   inputField(e) { this.setData({ [`form.${e.currentTarget.dataset.field}`]: e.detail.value }); },
   inputHazard(e) { this.setData({ [`hazard.${e.currentTarget.dataset.field}`]: e.detail.value }); },
-  selectCheckStatus(e) { this.setData({ [`form.${e.currentTarget.dataset.field}`]: e.currentTarget.dataset.value }); },
+  selectCheckStatus(e) {
+    const field = e.currentTarget.dataset.field;
+    const value = e.currentTarget.dataset.value;
+    const changes = { [`form.${field}`]: value };
+    if (value !== "abnormal") {
+      changes[`checkImages.${field}`] = [];
+      changes[`checkPhotoCounts.${field}`] = 0;
+    }
+    this.setData(changes);
+  },
   selectReadiness(e) { this.setData({ "form.site_readiness": e.currentTarget.dataset.value }); },
+  chooseLocation() {
+    wx.chooseLocation({
+      success: result => {
+        const locationName = (result.name || result.address || "").trim();
+        if (!locationName) { wx.showToast({ title: "未获取到位置名称", icon: "none" }); return; }
+        this.setData({ "form.location_text": locationName });
+      },
+      fail: error => {
+        if (!String(error.errMsg || "").includes("cancel")) wx.showToast({ title: "位置获取失败，请检查定位权限", icon: "none" });
+      }
+    });
+  },
+  chooseCheckImage(e) {
+    const field = e.currentTarget.dataset.field;
+    const current = this.data.checkImages[field] || [];
+    if (current.length >= 9) { wx.showToast({ title: "每项最多拍摄9张照片", icon: "none" }); return; }
+    wx.chooseMedia({
+      count: 9 - current.length,
+      mediaType: ["image"],
+      sourceType: ["camera"],
+      success: result => {
+        const images = current.concat(result.tempFiles.map(item => item.tempFilePath));
+        this.setData({ [`checkImages.${field}`]: images, [`checkPhotoCounts.${field}`]: images.length });
+      }
+    });
+  },
+  previewCheckImages(e) {
+    const images = this.data.checkImages[e.currentTarget.dataset.field] || [];
+    if (images.length) wx.previewImage({ current: images[0], urls: images });
+  },
   async loadData() {
     this.setData({ loading: true });
     try {
@@ -52,14 +92,19 @@ Page({
   async submitInspection() {
     const form = { ...this.data.form };
     if (!form.inspection_project || !form.inspection_area || !form.inspectors) { wx.showToast({ title: "请填写项目、区域和检查人员", icon: "none" }); return; }
+    const missingPhotoItem = this.data.checkItems.find(item => form[item.key] === "abnormal" && !(this.data.checkImages[item.key] || []).length);
+    if (missingPhotoItem) { wx.showToast({ title: `${missingPhotoItem.name}异常时请现场拍照`, icon: "none" }); return; }
     const imageGroups = form.hazards.map(h => h.images || []); form.hazards = form.hazards.map(({ images, ...rest }) => rest);
     try {
       wx.showLoading({ title: "正在保存", mask: true });
       const record = await request({ url: "/safety-inspections", method: "POST", data: form });
       for (const path of this.data.inspectionImages) await uploadImage(path, "safety_inspection", record.id, "site");
+      for (const item of this.data.checkItems) {
+        for (const path of this.data.checkImages[item.key] || []) await uploadImage(path, "safety_inspection", record.id, `check_${item.key}`);
+      }
       for (let i = 0; i < record.hazards.length; i++) for (const path of imageGroups[i] || []) await uploadImage(path, "safety_hazard", record.hazards[i].id, "hazard");
       const user = wx.getStorageSync("current_user") || {}; const next = emptyForm(); next.inspectors = user.real_name || "";
-      this.setData({ form: next, inspectionImages: [], activeTab: "records" }); await this.loadData(); wx.showToast({ title: "保存成功", icon: "success" });
+      this.setData({ form: next, inspectionImages: [], checkImages: {}, checkPhotoCounts: {}, activeTab: "records" }); await this.loadData(); wx.showToast({ title: "保存成功", icon: "success" });
     } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
     finally { wx.hideLoading(); }
   },

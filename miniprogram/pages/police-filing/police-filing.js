@@ -44,9 +44,14 @@ Page({
 
   async submit() {
     const form = { ...this.data.form };
-    if (!form.person_name || !form.id_card || !form.company_name || !form.region) {
-      wx.showToast({ title: "请填写姓名、身份证号、公司和地区", icon: "none" }); return;
+    Object.keys(form).forEach(key => { if (typeof form[key] === "string") form[key] = form[key].trim(); });
+    if (!form.person_name || !form.id_card || !form.company_name || !form.region || !form.mobile) {
+      wx.showToast({ title: "请填写全部必填信息", icon: "none" }); return;
     }
+    if (form.person_name.length < 2) { wx.showToast({ title: "人员姓名至少填写2个字", icon: "none" }); return; }
+    if (!/^\d{17}[\dXx]$/.test(form.id_card)) { wx.showToast({ title: "请输入正确的18位身份证号", icon: "none" }); return; }
+    if (!/^[0-9+\-\s]{7,20}$/.test(form.mobile)) { wx.showToast({ title: "请输入正确的联系电话", icon: "none" }); return; }
+    if (form.filing_status === "filed" && !form.filing_date) { wx.showToast({ title: "请选择备案日期", icon: "none" }); return; }
     if (form.filing_status !== "filed") delete form.filing_date;
     try {
       await request({ url: this.data.editingId ? `/police-filings/${this.data.editingId}` : "/police-filings", method: this.data.editingId ? "PUT" : "POST", data: form });

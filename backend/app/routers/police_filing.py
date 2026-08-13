@@ -14,7 +14,7 @@ from app.schemas.business import PoliceRegistrationInput, PoliceRegistrationView
 from app.schemas.common import ApiResponse
 
 
-router = APIRouter(prefix="/police-filings", tags=["公安备案"])
+router = APIRouter(prefix="/police-filings", tags=["安全备案"])
 MANAGER_ROLES = {"group_leader", "regional_manager", "regional_safety_manager", "project_leader"}
 
 
@@ -114,7 +114,7 @@ def export_filings(
 
     workbook = Workbook()
     sheet = workbook.active
-    sheet.title = "公安备案人员"
+    sheet.title = "安全备案人员"
     sheet.append(["序号", "姓名", "性别", "身份证号", "联系电话", "公司名称", "所属地区", "备案状态", "备案日期", "备注"])
     status_names = {"pending": "待备案", "filed": "已备案", "not_required": "无需备案"}
     for index, record in enumerate(records, 1):
@@ -130,7 +130,7 @@ def export_filings(
     output = BytesIO()
     workbook.save(output)
     output.seek(0)
-    filename = quote(f"公安备案人员_{region or '全部地区'}.xlsx")
+    filename = quote(f"安全备案人员_{region or '全部地区'}.xlsx")
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

@@ -2,10 +2,13 @@
   <view class="tabs"><view class="tab {{activeTab === 'list' ? 'active' : ''}}" data-tab="list" bindtap="switchTab">采购台账</view><view class="tab {{activeTab === 'form' ? 'active' : ''}}" data-tab="form" bindtap="switchTab">新增采购</view></view>
   <block wx:if="{{activeTab === 'list'}}">
     <view class="toolbar card"><input placeholder="耗材名称或经办人" value="{{keyword}}" bindinput="inputKeyword" bindconfirm="loadRecords"/><button bindtap="loadRecords">查询</button></view>
-    <button class="export-button" bindtap="exportExcel">导出采购台账 Excel</button>
+    <view class="export-panel card">
+      <view class="select-all" bindtap="toggleSelectAll"><text class="select-dot {{allSelected ? 'selected' : ''}}">{{allSelected ? '✓' : ''}}</text><text>全选当前列表</text><text class="selected-count">已选 {{selectedIds.length}} 条</text></view>
+      <view class="export-actions"><button class="export-selected {{!selectedIds.length ? 'disabled' : ''}}" bindtap="exportSelected">导出所选</button><button bindtap="exportAll">导出全部</button></view>
+    </view>
     <view wx:if="{{!loading && !records.length}}" class="empty">暂无采购记录</view>
     <view class="record-card card" wx:for="{{records}}" wx:key="id">
-      <view class="record-head"><b>{{item.item_name}}</b><text>¥{{item.total_amount}}</text></view>
+      <view class="record-head"><view class="record-name"><text class="select-dot {{item.selected ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleRecord">{{item.selected ? '✓' : ''}}</text><b>{{item.item_name}}</b></view><text>¥{{item.total_amount}}</text></view>
       <view class="tags"><text>{{item.category}}</text><text wx:if="{{item.is_manual_total}}" class="manual">总价已调整</text></view>
       <view class="record-line">{{item.quantity}} {{item.unit}} × ¥{{item.unit_price}} · {{item.purchase_date}}</view><view class="record-line">{{item.region}} · 经办人 {{item.operator_name}}</view><view class="record-actions"><text data-id="{{item.id}}" bindtap="editRecord">修改</text><text data-id="{{item.id}}" bindtap="deleteRecord">删除</text></view>
     </view>

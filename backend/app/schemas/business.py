@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
+import re
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -13,7 +14,7 @@ class PoliceRegistrationInput(BaseModel):
     id_card: str
     company_name: str = Field(min_length=1, max_length=160)
     region: str = Field(default="镇江", min_length=1, max_length=64)
-    mobile: Optional[str] = Field(default=None, max_length=32)
+    mobile: str = Field(min_length=7, max_length=32)
     filing_status: str = "pending"
     filing_date: Optional[date] = None
     remarks: Optional[str] = Field(default=None, max_length=500)
@@ -31,6 +32,14 @@ class PoliceRegistrationInput(BaseModel):
         value = normalize_id_card(value)
         if not is_valid_id_card(value):
             raise ValueError("身份证号格式或校验码不正确")
+        return value
+
+    @field_validator("mobile")
+    @classmethod
+    def validate_mobile(cls, value: str) -> str:
+        value = value.strip()
+        if not re.fullmatch(r"[0-9+\-\s]{7,20}", value):
+            raise ValueError("联系电话格式不正确")
         return value
 
     @field_validator("filing_status")

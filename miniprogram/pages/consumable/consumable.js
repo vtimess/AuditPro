@@ -7,7 +7,8 @@ const emptyForm = () => ({ category: "办公用品", item_name: "", quantity: "1
 
 Page({
   data: {
-    activeTab: "list", loading: false, records: [], keyword: "", form: emptyForm(), invoiceImages: [], editingId: null,
+    activeTab: "list", loading: false, records: [], keyword: "", selectedIds: [], allSelected: false,
+    form: emptyForm(), invoiceImages: [], editingId: null,
     categories: ["办公用品", "劳保用品", "清洁用品", "设备配件", "其他"], categoryIndex: 0,
     units: ["件", "个", "箱", "套", "公斤", "批"], unitIndex: 0, calculatedTotal: "0.00", manualTotal: false
   },
@@ -30,15 +31,35 @@ Page({
   changeDate(e) { this.setData({ "form.purchase_date": e.detail.value }); },
   async loadRecords() {
     this.setData({ loading: true });
-    try { const records = await request({ url: `/consumable-purchases?keyword=${encodeURIComponent(this.data.keyword.trim())}` }); this.setData({ records }); }
+    try {
+      const records = await request({ url: `/consumable-purchases?keyword=${encodeURIComponent(this.data.keyword.trim())}` });
+      this.setData({ records: records.map(item => ({ ...item, selected: false })), selectedIds: [], allSelected: false });
+    }
     catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
     finally { this.setData({ loading: false }); }
   },
-  exportExcel() {
+  toggleRecord(e) {
+    const id = Number(e.currentTarget.dataset.id);
+    const records = this.data.records.map(item => item.id === id ? { ...item, selected: !item.selected } : item);
+    const selectedIds = records.filter(item => item.selected).map(item => item.id);
+    this.setData({ records, selectedIds, allSelected: records.length > 0 && selectedIds.length === records.length });
+  },
+  toggleSelectAll() {
+    const selected = !this.data.allSelected;
+    const records = this.data.records.map(item => ({ ...item, selected }));
+    this.setData({ records, allSelected: selected, selectedIds: selected ? records.map(item => item.id) : [] });
+  },
+  exportSelected() {
+    if (!this.data.selectedIds.length) { wx.showToast({ title: "请先选择需要导出的记录", icon: "none" }); return; }
+    this.downloadExcel(this.data.selectedIds);
+  },
+  exportAll() { this.downloadExcel([]); },
+  downloadExcel(ids) {
     const token = wx.getStorageSync("access_token");
     wx.showLoading({ title: "正在导出" });
     wx.downloadFile({
-      url: `${API_BASE_URL}/consumable-purchases/export`, header: { Authorization: `Bearer ${token}` },
+      url: `${API_BASE_URL}/consumable-purchases/export${ids.length ? `?ids=${ids.join(",")}` : ""}`,
+      header: { Authorization: `Bearer ${token}` },
       success: result => {
         if (result.statusCode !== 200) { wx.showToast({ title: "导出失败", icon: "none" }); return; }
         wx.openDocument({ filePath: result.tempFilePath, fileType: "xlsx", showMenu: true });

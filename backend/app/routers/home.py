@@ -25,7 +25,7 @@ ROLE_SUMMARIES = {
 WORKBENCH_MODULES = [
     ("person_entry", "人员录入", "人员", "人员管理", {"regional_safety_manager", "project_leader"}),
     ("safety_inspection", "安全检查", "检查", "现场管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
-    ("police_filing", "公安备案", "备案", "人员管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
+    ("police_filing", "安全备案", "备案", "人员管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
     ("consumable_purchase", "耗材采购", "采购", "作业管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
     ("dispatch", "派工", "派工", "作业管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
     ("attendance", "工时打卡", "打卡", "现场管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),

@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `ops_police_registration` (
   PRIMARY KEY (`id`), UNIQUE KEY `uk_police_id_card_hash` (`id_card_hash`),
   KEY `idx_police_region_status` (`region`, `filing_status`),
   CONSTRAINT `fk_police_created_by` FOREIGN KEY (`created_by`) REFERENCES `sys_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='公安备案人员';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='安全备案人员';
 
 CREATE TABLE IF NOT EXISTS `ops_consumable_purchase` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,

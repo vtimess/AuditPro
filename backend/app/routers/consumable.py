@@ -99,8 +99,12 @@ def export_purchases(
     keyword: str = Query(default="", max_length=120),
     category: str = Query(default="", max_length=64),
     region: str = Query(default="", max_length=64),
+    ids: str = Query(default="", pattern=r"^\d+(,\d+)*$|^$"),
 ):
     query = scoped_query(current_user)
+    if ids:
+        selected_ids = [int(item) for item in ids.split(",")]
+        query = query.where(ConsumablePurchase.id.in_(selected_ids))
     if keyword:
         query = query.where(ConsumablePurchase.item_name.contains(keyword) | ConsumablePurchase.operator_name.contains(keyword))
     if category:
@@ -123,7 +127,7 @@ def export_purchases(
     output = BytesIO()
     workbook.save(output)
     output.seek(0)
-    filename = quote(f"耗材采购台账_{region or '全部地区'}.xlsx")
+    filename = quote(f"耗材采购台账_{'已选记录' if ids else region or '全部地区'}.xlsx")
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
