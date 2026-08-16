@@ -1,4 +1,4 @@
-const { request } = require("../../utils/request");
+const { homeApi } = require("../../api/index");
 
 Page({
   data: {
@@ -21,7 +21,7 @@ Page({
   async loadHome() {
     this.setData({ loading: !this.data.home });
     try {
-      const home = await request({ url: "/home" });
+      const home = await homeApi.getHome();
       this.setData({ home });
     } catch (error) {
       wx.showToast({ title: error.message || "加载失败", icon: "none" });

@@ -8,11 +8,15 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.core.id_card import is_valid_id_card, normalize_id_card
 
 
+FIXED_FILING_COMPANY = "泗阳星光装卸有限公司"
+FILING_REGIONS = {"镇江", "南京"}
+
+
 class PoliceRegistrationInput(BaseModel):
     person_name: str = Field(min_length=2, max_length=64)
     gender: str
     id_card: str
-    company_name: str = Field(min_length=1, max_length=160)
+    company_name: str = Field(default=FIXED_FILING_COMPANY, min_length=1, max_length=160)
     region: str = Field(default="镇江", min_length=1, max_length=64)
     mobile: str = Field(min_length=7, max_length=32)
     filing_status: str = "pending"
@@ -42,6 +46,20 @@ class PoliceRegistrationInput(BaseModel):
             raise ValueError("联系电话格式不正确")
         return value
 
+    @field_validator("company_name")
+    @classmethod
+    def validate_company_name(cls, value: str) -> str:
+        if value != FIXED_FILING_COMPANY:
+            raise ValueError(f"公司名称固定为{FIXED_FILING_COMPANY}")
+        return value
+
+    @field_validator("region")
+    @classmethod
+    def validate_region(cls, value: str) -> str:
+        if value not in FILING_REGIONS:
+            raise ValueError("所属地区只能选择镇江或南京")
+        return value
+
     @field_validator("filing_status")
     @classmethod
     def validate_status(cls, value: str) -> str:
@@ -61,6 +79,7 @@ class PoliceRegistrationView(BaseModel):
     person_name: str
     gender: str
     id_card: str
+    age: int
     company_name: str
     region: str
     mobile: Optional[str] = None

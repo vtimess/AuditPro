@@ -1,4 +1,4 @@
-const { request } = require("../../utils/request");
+const { profileApi } = require("../../api/index");
 
 Page({
   data: {
@@ -17,7 +17,7 @@ Page({
 
   async loadProfile() {
     try {
-      const user = await request({ url: "/profile" });
+      const user = await profileApi.get();
       getApp().globalData.user = user;
       wx.setStorageSync("current_user", user);
       this.setData({ user, avatarText: (user.real_name || "用").slice(0, 1) });
@@ -39,7 +39,7 @@ Page({
         const name = (result.content || "").trim();
         if (!result.confirm || !name || name === current) return;
         try {
-          const user = await request({ url: "/profile", method: "PATCH", data: { real_name: name } });
+          const user = await profileApi.update({ real_name: name });
           this.setData({ user, avatarText: (user.real_name || "用").slice(0, 1) });
           wx.setStorageSync("current_user", user);
           wx.showToast({ title: "已保存", icon: "success" });

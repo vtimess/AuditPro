@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import models  # noqa: F401
 from app.core.config import settings
 from app.database import Base, engine
-from app.routers import attendance, auth, consumable, files, home, police_filing, profile, safety
+from app.routers import attendance, auth, consumable, emergency_drill, files, home, personnel, police_filing, profile, safety
 
 
 @asynccontextmanager
@@ -36,8 +36,10 @@ app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(home.router, prefix=settings.api_prefix)
 app.include_router(profile.router, prefix=settings.api_prefix)
 app.include_router(attendance.router, prefix=settings.api_prefix)
+app.include_router(personnel.router, prefix=settings.api_prefix)
 app.include_router(police_filing.router, prefix=settings.api_prefix)
 app.include_router(consumable.router, prefix=settings.api_prefix)
+app.include_router(emergency_drill.router, prefix=settings.api_prefix)
 app.include_router(safety.router, prefix=settings.api_prefix)
 app.include_router(files.router, prefix=settings.api_prefix)
 

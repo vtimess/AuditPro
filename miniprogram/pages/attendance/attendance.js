@@ -1,4 +1,4 @@
-const { request } = require("../../utils/request");
+const { attendanceApi } = require("../../api/index");
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -70,7 +70,7 @@ Page({
 
   async loadToday() {
     try {
-      const today = await request({ url: "/attendance/today" });
+      const today = await attendanceApi.getToday();
       if (today.check_in) today.check_in.display_time = formatTime(today.check_in.punched_at);
       if (today.check_out) today.check_out.display_time = formatTime(today.check_out.punched_at);
       this.setData({ today });
@@ -110,7 +110,7 @@ Page({
     this.setData({ punching: true });
     try {
       const location = this.data.location || await this.locate();
-      const result = await request({ url: "/attendance/punch", method: "POST", data: location });
+      const result = await attendanceApi.punch(location);
       wx.showToast({ title: result.punch_type === "check_in" ? "上班打卡成功" : "下班打卡成功", icon: "success" });
       await Promise.all([this.loadToday(), this.loadMonth()]);
     } catch (error) {
@@ -122,7 +122,7 @@ Page({
 
   async loadMonth() {
     try {
-      const calendar = await request({ url: `/attendance/month?month=${this.data.month}` });
+      const calendar = await attendanceApi.getMonth(this.data.month);
       const [year, month] = this.data.month.split("-").map(Number);
       const firstWeekday = new Date(year, month - 1, 1).getDay();
       const blanks = Array.from({ length: firstWeekday }, (_, index) => ({ blank: true, key: `blank-${index}` }));
@@ -190,15 +190,11 @@ Page({
     }
     const type = this.data.supplementTypes[this.data.supplementTypeIndex];
     try {
-      await request({
-        url: "/attendance/supplements",
-        method: "POST",
-        data: {
-          work_date: this.data.selectedDay.date,
-          punch_type: type.value,
-          punch_time: `${this.data.supplementTime}:00`,
-          reason
-        }
+      await attendanceApi.submitSupplement({
+        work_date: this.data.selectedDay.date,
+        punch_type: type.value,
+        punch_time: `${this.data.supplementTime}:00`,
+        reason
       });
       this.setData({ supplementVisible: false });
       wx.showToast({ title: "补卡申请已提交", icon: "success" });

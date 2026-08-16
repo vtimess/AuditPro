@@ -23,8 +23,10 @@ ROLE_SUMMARIES = {
 
 
 WORKBENCH_MODULES = [
-    ("person_entry", "人员录入", "人员", "人员管理", {"regional_safety_manager", "project_leader"}),
+    ("personnel_management", "人员管理", "人员", "人员管理", {"group_leader", "regional_manager", "regional_safety_manager", "project_leader", "ordinary_user"}),
+    ("heart_to_heart_talk", "谈心谈话", "谈话", "人员管理", {"group_leader", "regional_manager", "regional_safety_manager", "project_leader", "ordinary_user"}),
     ("safety_inspection", "安全检查", "检查", "现场管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
+    ("emergency_drill", "安全应急演练", "演练", "现场管理", {"group_leader", "regional_manager", "regional_safety_manager", "project_leader", "ordinary_user"}),
     ("police_filing", "安全备案", "备案", "人员管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
     ("consumable_purchase", "耗材采购", "采购", "作业管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
     ("dispatch", "派工", "派工", "作业管理", {"regional_safety_manager", "project_leader", "ordinary_user"}),
@@ -85,8 +87,8 @@ def workbench(current_user: CurrentUser) -> ApiResponse[WorkbenchResult]:
             name=name,
             icon=icon,
             group=group,
-            enabled=key in {"attendance", "police_filing", "consumable_purchase", "safety_inspection"},
-            status_text="进入" if key in {"attendance", "police_filing", "consumable_purchase", "safety_inspection"} else "规划中",
+            enabled=key in {"attendance", "personnel_management", "police_filing", "consumable_purchase", "safety_inspection", "emergency_drill"},
+            status_text="进入" if key in {"attendance", "personnel_management", "police_filing", "consumable_purchase", "safety_inspection", "emergency_drill"} else "规划中",
         )
         for key, name, icon, group, roles in WORKBENCH_MODULES
         if current_user.role_code in roles

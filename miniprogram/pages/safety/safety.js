@@ -1,5 +1,4 @@
-const { request } = require("../../utils/request");
-const { uploadImage } = require("../../utils/upload");
+const { safetyApi, fileApi } = require("../../api/index");
 
 function nowText() { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:00`; }
 const emptyForm = () => ({ inspection_project: "", region: "镇江", inspection_area: "", inspected_at: nowText(), inspectors: "", location_text: "", weather: "", site_readiness: "normal", environment_status: "normal", equipment_status: "normal", fire_status: "normal", ppe_status: "normal", work_order_status: "normal", description: "", hazards: [] });
@@ -69,7 +68,7 @@ Page({
   async loadData() {
     this.setData({ loading: true });
     try {
-      const [inspections, rectifications] = await Promise.all([request({ url: "/safety-inspections" }), request({ url: "/safety-inspections/rectifications" })]);
+      const [inspections, rectifications] = await Promise.all([safetyApi.list(), safetyApi.listRectifications()]);
       const riskNames = { general: "一般", high: "较大", major: "重大" }, statusNames = { pending: "待整改", pending_review: "待复查", completed: "已完成" };
       this.setData({ inspections: inspections.map(i => ({ ...i, risk_text: riskNames[i.highest_risk_level] || "无危险点" })), rectifications: rectifications.map(i => ({ ...i, risk_text: riskNames[i.risk_level], status_text: statusNames[i.status] })) });
     } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
@@ -97,12 +96,12 @@ Page({
     const imageGroups = form.hazards.map(h => h.images || []); form.hazards = form.hazards.map(({ images, ...rest }) => rest);
     try {
       wx.showLoading({ title: "正在保存", mask: true });
-      const record = await request({ url: "/safety-inspections", method: "POST", data: form });
-      for (const path of this.data.inspectionImages) await uploadImage(path, "safety_inspection", record.id, "site");
+      const record = await safetyApi.create(form);
+      for (const path of this.data.inspectionImages) await fileApi.uploadImage(path, "safety_inspection", record.id, "site");
       for (const item of this.data.checkItems) {
-        for (const path of this.data.checkImages[item.key] || []) await uploadImage(path, "safety_inspection", record.id, `check_${item.key}`);
+        for (const path of this.data.checkImages[item.key] || []) await fileApi.uploadImage(path, "safety_inspection", record.id, `check_${item.key}`);
       }
-      for (let i = 0; i < record.hazards.length; i++) for (const path of imageGroups[i] || []) await uploadImage(path, "safety_hazard", record.hazards[i].id, "hazard");
+      for (let i = 0; i < record.hazards.length; i++) for (const path of imageGroups[i] || []) await fileApi.uploadImage(path, "safety_hazard", record.hazards[i].id, "hazard");
       const user = wx.getStorageSync("current_user") || {}; const next = emptyForm(); next.inspectors = user.real_name || "";
       this.setData({ form: next, inspectionImages: [], checkImages: {}, checkPhotoCounts: {}, activeTab: "records" }); await this.loadData(); wx.showToast({ title: "保存成功", icon: "success" });
     } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
@@ -115,8 +114,8 @@ Page({
         if (!r.confirm || !r.content.trim()) return;
         try {
           wx.showLoading({ title: "正在提交", mask: true });
-          await request({ url: `/safety-inspections/hazards/${id}/rectify`, method: "POST", data: { description: r.content.trim() } });
-          for (const item of media.tempFiles) await uploadImage(item.tempFilePath, "safety_hazard", id, "rectification");
+          await safetyApi.rectify(id, { description: r.content.trim() });
+          for (const item of media.tempFiles) await fileApi.uploadImage(item.tempFilePath, "safety_hazard", id, "rectification");
           await this.loadData(); wx.showToast({ title: "已提交复查", icon: "success" });
         } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
         finally { wx.hideLoading(); }
@@ -130,7 +129,7 @@ Page({
       wx.showModal({ title: result === "approved" ? "复查通过" : "复查不通过", editable: true, placeholderText: "请输入复查意见", success: async modal => {
         if (!modal.confirm || !modal.content.trim()) return;
         try {
-          await request({ url: `/safety-inspections/hazards/${id}/review`, method: "POST", data: { result, comment: modal.content.trim() } });
+          await safetyApi.review(id, { result, comment: modal.content.trim() });
           await this.loadData(); wx.showToast({ title: "复查完成", icon: "success" });
         } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
       }});

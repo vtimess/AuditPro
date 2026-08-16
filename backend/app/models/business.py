@@ -35,6 +35,45 @@ class PoliceRegistration(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 
 
+class Personnel(Base):
+    __tablename__ = "ops_personnel"
+
+    id: Mapped[int] = mapped_column(bigint_pk(), primary_key=True, autoincrement=True)
+    staff_no: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, unique=True, index=True)
+    unit_name: Mapped[str] = mapped_column(String(64), nullable=False, default="泗阳队")
+    department_name: Mapped[str] = mapped_column(String(64), nullable=False, default="泗阳劳务")
+    position: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    employment_status: Mapped[str] = mapped_column(String(20), nullable=False, default="在职", index=True)
+    person_name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    gender: Mapped[str] = mapped_column(String(10), nullable=False)
+    id_card_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    id_card_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    id_card_last4: Mapped[str] = mapped_column(String(4), nullable=False, index=True)
+    birth_date: Mapped[date] = mapped_column(Date, nullable=False)
+    nationality: Mapped[str] = mapped_column(String(32), nullable=False, default="汉族")
+    education: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    chronic_disease: Mapped[str] = mapped_column(String(32), nullable=False, default="否")
+    has_chronic_disease: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    smokes: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    drinks_alcohol: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    native_place: Mapped[Optional[str]] = mapped_column(String(160), nullable=True)
+    political_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    joined_party_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    served_in_military: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    military_service_time: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    port_entry_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True, index=True)
+    mobile: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    home_address: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    emergency_contact: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    emergency_mobile: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    insurance_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    accident_insurance_limit: Mapped[str] = mapped_column(String(20), nullable=False, default="150+")
+    created_by: Mapped[int] = mapped_column(bigint_pk(), ForeignKey("sys_user.id"), index=True)
+    record_status: Mapped[str] = mapped_column(String(20), nullable=False, default="active", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
 class ConsumablePurchase(Base):
     __tablename__ = "ops_consumable_purchase"
 

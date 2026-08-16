@@ -1,6 +1,4 @@
-const { request } = require("../../utils/request");
-const { uploadImage } = require("../../utils/upload");
-const { API_BASE_URL } = require("../../config/index");
+const { consumableApi, fileApi } = require("../../api/index");
 
 function today() { const d = new Date(); const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
 const emptyForm = () => ({ category: "办公用品", item_name: "", quantity: "1", unit: "件", unit_price: "", total_amount: "", total_adjustment_reason: "", purchase_date: today(), supplier_name: "", invoice_number: "", region: "镇江", description: "" });
@@ -32,7 +30,7 @@ Page({
   async loadRecords() {
     this.setData({ loading: true });
     try {
-      const records = await request({ url: `/consumable-purchases?keyword=${encodeURIComponent(this.data.keyword.trim())}` });
+      const records = await consumableApi.list(this.data.keyword);
       this.setData({ records: records.map(item => ({ ...item, selected: false })), selectedIds: [], allSelected: false });
     }
     catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
@@ -54,17 +52,16 @@ Page({
     this.downloadExcel(this.data.selectedIds);
   },
   exportAll() { this.downloadExcel([]); },
-  downloadExcel(ids) {
-    const token = wx.getStorageSync("access_token");
+  async downloadExcel(ids) {
     wx.showLoading({ title: "正在导出" });
-    wx.downloadFile({
-      url: `${API_BASE_URL}/consumable-purchases/export${ids.length ? `?ids=${ids.join(",")}` : ""}`,
-      header: { Authorization: `Bearer ${token}` },
-      success: result => {
-        if (result.statusCode !== 200) { wx.showToast({ title: "导出失败", icon: "none" }); return; }
-        wx.openDocument({ filePath: result.tempFilePath, fileType: "xlsx", showMenu: true });
-      }, fail: () => wx.showToast({ title: "导出失败", icon: "none" }), complete: () => wx.hideLoading()
-    });
+    try {
+      const filePath = await consumableApi.exportExcel(ids);
+      wx.openDocument({ filePath, fileType: "xlsx", showMenu: true });
+    } catch (error) {
+      wx.showToast({ title: error.message || "导出失败", icon: "none" });
+    } finally {
+      wx.hideLoading();
+    }
   },
   chooseInvoice() {
     wx.chooseMedia({ count: 9 - this.data.invoiceImages.length, mediaType: ["image"], sourceType: ["album", "camera"], success: result => this.setData({ invoiceImages: this.data.invoiceImages.concat(result.tempFiles.map(item => item.tempFilePath)) }) });
@@ -77,8 +74,8 @@ Page({
     if (this.data.manualTotal && !form.total_adjustment_reason.trim()) { wx.showToast({ title: "请填写总价调整原因", icon: "none" }); return; }
     try {
       wx.showLoading({ title: "正在保存", mask: true });
-      const record = await request({ url: this.data.editingId ? `/consumable-purchases/${this.data.editingId}` : "/consumable-purchases", method: this.data.editingId ? "PUT" : "POST", data: form });
-      for (const path of this.data.invoiceImages) await uploadImage(path, "consumable_purchase", record.id, "invoice");
+      const record = await consumableApi.save(this.data.editingId, form);
+      for (const path of this.data.invoiceImages) await fileApi.uploadImage(path, "consumable_purchase", record.id, "invoice");
       this.setData({ form: emptyForm(), invoiceImages: [], editingId: null, calculatedTotal: "0.00", manualTotal: false, activeTab: "list" });
       await this.loadRecords(); wx.showToast({ title: "保存成功", icon: "success" });
     } catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
@@ -86,7 +83,7 @@ Page({
   }
   ,async editRecord(e) {
     try {
-      const record = await request({ url: `/consumable-purchases/${e.currentTarget.dataset.id}` });
+      const record = await consumableApi.get(e.currentTarget.dataset.id);
       const categoryIndex = Math.max(0, this.data.categories.indexOf(record.category));
       const unitIndex = Math.max(0, this.data.units.indexOf(record.unit));
       this.setData({
@@ -100,7 +97,7 @@ Page({
     const id = e.currentTarget.dataset.id;
     wx.showModal({ title: "删除采购记录", content: "删除后将不再显示，是否继续？", success: async result => {
       if (!result.confirm) return;
-      try { await request({ url: `/consumable-purchases/${id}`, method: "DELETE" }); await this.loadRecords(); wx.showToast({ title: "已删除", icon: "success" }); }
+      try { await consumableApi.remove(id); await this.loadRecords(); wx.showToast({ title: "已删除", icon: "success" }); }
       catch (error) { wx.showToast({ title: error.message, icon: "none" }); }
     }});
   }

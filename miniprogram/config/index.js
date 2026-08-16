@@ -1,4 +1,16 @@
+// 发布生产版本时使用 production，本地联调时改为 test。
+const API_ENV = "production";
+
+const API_ENVIRONMENTS = {
+  test: "http://127.0.0.1:8000/api/v1",
+  production: "https://www.vtimess.cn/api/v1"
+};
+
+if (!API_ENVIRONMENTS[API_ENV]) {
+  throw new Error(`未知的小程序接口环境：${API_ENV}`);
+}
+
 module.exports = {
-  // 真机调试和发布前，替换为已在微信公众平台配置的 HTTPS 业务域名。
-  API_BASE_URL: "http://127.0.0.1:8000/api/v1"
+  API_ENV,
+  API_BASE_URL: API_ENVIRONMENTS[API_ENV]
 };

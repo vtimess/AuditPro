@@ -1,0 +1,22 @@
+<view class="entry-page safe-bottom">
+  <view class="form-card card">
+    <view class="form-title">{{editingId ? '修改备案信息' : '新增备案信息'}}</view>
+    <view class="form-desc">请如实填写人员身份及备案状态</view>
+
+    <view class="section-title">人员信息</view>
+    <view class="field"><text>人员姓名 *</text><input placeholder="请输入姓名" data-field="person_name" value="{{form.person_name}}" bindinput="inputField"/></view>
+    <view class="field"><text>性别 *</text><picker range="{{genderOptions}}" value="{{genderIndex}}" bindchange="changeGender"><view class="picker">{{form.gender}} ›</view></picker></view>
+    <view class="field"><text>身份证号 *</text><input type="idcard" maxlength="18" placeholder="请输入18位身份证号" value="{{form.id_card}}" bindinput="inputIdCard"/></view>
+    <view class="field readonly"><text>年龄</text><view>{{form.age !== '' ? form.age + '岁' : '根据身份证自动计算'}}</view></view>
+    <view class="field"><text>联系电话 *</text><input type="number" maxlength="20" placeholder="请输入联系电话" data-field="mobile" value="{{form.mobile}}" bindinput="inputField"/></view>
+
+    <view class="section-title">单位与备案</view>
+    <view class="field readonly"><text>公司名称</text><view>{{form.company_name}}</view></view>
+    <view class="field"><text>所属地区 *</text><picker range="{{regionOptions}}" value="{{regionIndex}}" bindchange="changeRegion"><view class="picker">{{form.region}} ›</view></picker></view>
+    <view class="field"><text>备案状态</text><picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="changeStatus"><view class="picker">{{statusOptions[statusIndex].label}} ›</view></picker></view>
+    <view class="field" wx:if="{{form.filing_status === 'filed'}}"><text>备案日期 *</text><picker mode="date" value="{{form.filing_date}}" bindchange="changeDate"><view class="picker">{{form.filing_date || '请选择'}} ›</view></picker></view>
+    <view class="field vertical"><text>备注</text><textarea maxlength="500" placeholder="选填" data-field="remarks" value="{{form.remarks}}" bindinput="inputField"/></view>
+
+    <view class="form-actions"><button class="cancel" bindtap="goBack">取消</button><button class="primary" loading="{{saving}}" bindtap="submit">{{editingId ? '保存修改' : '保存备案信息'}}</button></view>
+  </view>
+</view>

@@ -1,0 +1,47 @@
+<view class="entry-page safe-bottom">
+  <view class="import-card card" wx:if="{{!editingId}}">
+    <view><view class="import-title">Excel 批量录入</view><view class="import-desc">请先下载标准模板，填写完成后选择 .xlsx 文件导入</view></view>
+    <view class="import-actions"><button bindtap="downloadTemplate">下载模板</button><button class="import-button" loading="{{importing}}" bindtap="chooseExcel">选择文件</button></view>
+  </view>
+
+  <view class="form-card card">
+    <view class="form-title">{{editingId ? '修改人员信息' : '手工录入人员'}}</view>
+    <view class="section-title">任职信息</view>
+    <view class="field readonly"><text>序号</text><view>{{form.staff_no || '保存后自动生成'}}</view></view>
+    <view class="field readonly"><text>单位</text><view>泗阳队</view></view>
+    <view class="field readonly"><text>部门</text><view>泗阳劳务</view></view>
+    <view class="field"><text>职务岗位 *</text><picker range="{{positions}}" value="{{positionIndex}}" bindchange="changePosition"><view class="picker">{{form.position}} ›</view></picker></view>
+    <view class="field"><text>在职状态 *</text><picker range="{{employmentStatuses}}" value="{{employmentStatusIndex}}" bindchange="changeEmploymentStatus"><view class="picker">{{form.employment_status}} ›</view></picker></view>
+
+    <view class="section-title">身份信息</view>
+    <view class="field"><text>姓名 *</text><input placeholder="请输入姓名" data-field="person_name" value="{{form.person_name}}" bindinput="inputField"/></view>
+    <view class="field"><text>性别 *</text><picker range="{{genders}}" value="{{genderIndex}}" bindchange="changeGender"><view class="picker">{{form.gender}} ›</view></picker></view>
+    <view class="field"><text>身份证号 *</text><input type="idcard" maxlength="18" placeholder="请输入18位身份证号" value="{{form.id_card}}" bindinput="inputIdCard"/></view>
+    <view class="field readonly"><text>出生日期</text><view>{{form.birth_date || '根据身份证自动计算'}}</view></view>
+    <view class="field readonly"><text>年龄</text><view>{{form.age !== '' ? form.age + '岁' : '根据身份证自动计算'}}</view></view>
+    <view class="field"><text>民族</text><input placeholder="默认汉族" data-field="nationality" value="{{form.nationality}}" bindinput="inputField"/></view>
+    <view class="field"><text>学历</text><picker range="{{educations}}" value="{{educationIndex}}" bindchange="changeEducation"><view class="picker">{{form.education}} ›</view></picker></view>
+    <view class="field"><text>籍贯</text><input placeholder="选填" data-field="native_place" value="{{form.native_place}}" bindinput="inputField"/></view>
+    <view class="field"><text>政治面貌</text><picker range="{{politicalStatuses}}" value="{{politicalStatusIndex}}" bindchange="changePoliticalStatus"><view class="picker">{{form.political_status}} ›</view></picker></view>
+    <view class="field readonly" wx:if="{{form.political_status === '群众'}}"><text>入党时间</text><view>无</view></view>
+    <view class="field" wx:else><text>入党时间</text><picker mode="date" value="{{form.joined_party_at}}" data-field="joined_party_at" bindchange="changeDate"><view class="picker">{{form.joined_party_at || '请选择'}} ›</view></picker></view>
+
+    <view class="section-title">健康与经历</view>
+    <view class="field"><text>基础病</text><picker range="{{chronicDiseases}}" value="{{chronicDiseaseIndex}}" bindchange="changeChronicDisease"><view class="picker">{{form.chronic_disease}} ›</view></picker></view>
+    <view class="field"><text>是否吸烟</text><picker range="{{yesNoOptions}}" value="{{form.smokes ? 1 : 0}}" data-field="smokes" bindchange="changeBoolean"><view class="picker">{{form.smokes ? '是' : '否'}} ›</view></picker></view>
+    <view class="field"><text>是否喝酒</text><picker range="{{yesNoOptions}}" value="{{form.drinks_alcohol ? 1 : 0}}" data-field="drinks_alcohol" bindchange="changeBoolean"><view class="picker">{{form.drinks_alcohol ? '是' : '否'}} ›</view></picker></view>
+    <view class="field"><text>是否参军</text><picker range="{{yesNoOptions}}" value="{{form.served_in_military ? 1 : 0}}" data-field="served_in_military" bindchange="changeBoolean"><view class="picker">{{form.served_in_military ? '是' : '否'}} ›</view></picker></view>
+    <view class="field" wx:if="{{form.served_in_military}}"><text>参军工作时间</text><input placeholder="例如2012.12—2014.12" data-field="military_service_time" value="{{form.military_service_time}}" bindinput="inputField"/></view>
+    <view class="field"><text>进港时间</text><picker mode="date" value="{{form.port_entry_date}}" data-field="port_entry_date" bindchange="changeDate"><view class="picker">{{form.port_entry_date || '请选择'}} ›</view></picker></view>
+
+    <view class="section-title">联系与保险</view>
+    <view class="field"><text>联系电话 *</text><input type="number" maxlength="11" placeholder="请输入11位手机号码" data-field="mobile" value="{{form.mobile}}" bindinput="inputField"/></view>
+    <view class="field vertical"><text>家庭住址</text><textarea maxlength="500" placeholder="请输入家庭住址" data-field="home_address" value="{{form.home_address}}" bindinput="inputField"/></view>
+    <view class="field"><text>紧急联系人</text><input placeholder="选填" data-field="emergency_contact" value="{{form.emergency_contact}}" bindinput="inputField"/></view>
+    <view class="field"><text>紧急联系人电话</text><input type="number" maxlength="20" placeholder="选填" data-field="emergency_mobile" value="{{form.emergency_mobile}}" bindinput="inputField"/></view>
+    <view class="field"><text>保险种类 *</text><picker range="{{insuranceTypes}}" value="{{insuranceIndex}}" bindchange="changeInsurance"><view class="picker">{{form.insurance_type}} ›</view></picker></view>
+    <view class="field readonly"><text>意外保险额度</text><view>150+</view></view>
+
+    <view class="form-actions"><button class="cancel" bindtap="goBack">取消</button><button class="primary" loading="{{saving}}" bindtap="submit">{{editingId ? '保存修改' : '保存人员信息'}}</button></view>
+  </view>
+</view>

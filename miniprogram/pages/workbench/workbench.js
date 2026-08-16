@@ -1,4 +1,4 @@
-const { request } = require("../../utils/request");
+const { homeApi } = require("../../api/index");
 
 Page({
   data: {
@@ -20,7 +20,7 @@ Page({
 
   async loadModules() {
     try {
-      const result = await request({ url: "/workbench" });
+      const result = await homeApi.getWorkbench();
       const grouped = {};
       result.modules.forEach((item) => {
         if (!grouped[item.group]) grouped[item.group] = [];
@@ -39,9 +39,11 @@ Page({
     const { enabled, name, key } = event.currentTarget.dataset;
     const routes = {
       attendance: "/pages/attendance/attendance",
+      personnel_management: "/pages/personnel/personnel",
       police_filing: "/pages/police-filing/police-filing",
       consumable_purchase: "/pages/consumable/consumable",
-      safety_inspection: "/pages/safety/safety"
+      safety_inspection: "/pages/safety/safety",
+      emergency_drill: "/pages/emergency-drill/emergency-drill"
     };
     if (enabled && routes[key]) {
       wx.navigateTo({ url: routes[key] });

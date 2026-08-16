@@ -1,4 +1,4 @@
-const { request } = require("../../utils/request");
+const { authApi } = require("../../api/index");
 
 function getWechatProfile() {
   return new Promise((resolve, reject) => {
@@ -19,7 +19,7 @@ function getLoginCode() {
 Page({
   data: {
     loading: false,
-    privacyChecked: true
+    privacyChecked: false
   },
 
   onLoad() {
@@ -48,14 +48,10 @@ Page({
         }
         const loginResult = await getLoginCode();
         if (!loginResult.code) throw new Error("未获取到微信登录凭证");
-        const loginData = await request({
-          url: "/auth/wechat-login",
-          method: "POST",
-          data: {
-            code: loginResult.code,
-            nickname: profile.nickName || "微信用户",
-            avatar_url: profile.avatarUrl
-          }
+        const loginData = await authApi.wechatLogin({
+          code: loginResult.code,
+          nickname: profile.nickName || "微信用户",
+          avatar_url: profile.avatarUrl
         });
         getApp().setSession(loginData.access_token, loginData.user);
         wx.switchTab({ url: "/pages/home/home" });

@@ -1,0 +1,41 @@
+<view class="drill-page safe-bottom">
+  <view class="page-head">
+    <view>
+      <view class="eyebrow">EMERGENCY DRILL</view>
+      <view class="page-title">安全应急演练</view>
+      <view class="page-desc">集中管理 Word、PDF 应急演练方案</view>
+    </view>
+    <button loading="{{importing}}" bindtap="chooseDocument">＋ 导入方案</button>
+  </view>
+
+  <view class="format-tip card">
+    <view class="tip-icon">文档</view>
+    <view><text>支持 Word / PDF</text><text>单个文件不超过30MB，导入后可在线预览或导出原文件</text></view>
+  </view>
+
+  <view class="search-card card">
+    <input placeholder="请输入方案文件名称" value="{{keyword}}" bindinput="inputKeyword" bindconfirm="loadRecords"/>
+    <button bindtap="loadRecords">查询</button>
+  </view>
+
+  <view class="list-summary">
+    <text>演练方案</text>
+    <text>共 {{records.length}} 个</text>
+  </view>
+  <view wx:if="{{!loading && !records.length}}" class="empty">暂无应急演练方案</view>
+
+  <view class="record-card card" wx:for="{{records}}" wx:key="id">
+    <view class="record-main">
+      <view class="file-badge {{item.file_type === 'PDF' ? 'pdf' : ''}}">{{item.file_type}}</view>
+      <view class="file-info">
+        <view class="file-name">{{item.file_name}}</view>
+        <view class="file-meta">{{item.size_text}} · {{item.uploaded_by_name}}</view>
+        <view class="file-time">导入于 {{item.created_text}}</view>
+      </view>
+    </view>
+    <view class="record-actions">
+      <button data-url="{{item.preview_url}}" data-name="{{item.file_name}}" bindtap="previewDocument">预览</button>
+      <button class="export" data-url="{{item.export_url}}" data-name="{{item.file_name}}" bindtap="exportDocument">导出</button>
+    </view>
+  </view>
+</view>

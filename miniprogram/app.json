@@ -5,9 +5,13 @@
     "pages/workbench/workbench",
     "pages/profile/profile",
     "pages/attendance/attendance",
+    "pages/personnel/personnel",
+    "pages/personnel-entry/personnel-entry",
     "pages/police-filing/police-filing",
+    "pages/police-filing-entry/police-filing-entry",
     "pages/consumable/consumable",
-    "pages/safety/safety"
+    "pages/safety/safety",
+    "pages/emergency-drill/emergency-drill"
   ],
   "window": {
     "navigationBarBackgroundColor": "#173A50",

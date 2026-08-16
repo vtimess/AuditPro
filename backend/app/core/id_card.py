@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import re
+from datetime import date, datetime
 
 from cryptography.fernet import Fernet
 
@@ -18,9 +19,27 @@ def is_valid_id_card(value: str) -> bool:
     value = normalize_id_card(value)
     if not ID_CARD_PATTERN.fullmatch(value):
         return False
+    try:
+        birth_date = datetime.strptime(value[6:14], "%Y%m%d").date()
+    except ValueError:
+        return False
+    if birth_date > date.today():
+        return False
     weights = (7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2)
     checks = "10X98765432"
     return checks[sum(int(value[i]) * weights[i] for i in range(17)) % 11] == value[-1]
+
+
+def birth_date_from_id_card(value: str) -> date:
+    value = normalize_id_card(value)
+    if not is_valid_id_card(value):
+        raise ValueError("身份证号格式或校验码不正确")
+    return datetime.strptime(value[6:14], "%Y%m%d").date()
+
+
+def age_from_birth_date(birth_date: date, today: date | None = None) -> int:
+    current = today or date.today()
+    return current.year - birth_date.year - ((current.month, current.day) < (birth_date.month, birth_date.day))
 
 
 def _fernet() -> Fernet:

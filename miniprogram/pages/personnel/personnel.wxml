@@ -1,0 +1,22 @@
+<view class="personnel-page safe-bottom">
+  <view class="page-head">
+    <view><view class="page-title">人员花名册</view><view class="page-desc">泗阳队人员档案统一管理</view></view>
+    <button bindtap="openEntry">＋ 人员录入</button>
+  </view>
+
+  <view class="search-card card">
+    <input placeholder="姓名/电话/身份证后四位" value="{{keyword}}" bindinput="inputKeyword" bindconfirm="loadRecords"/>
+    <button class="action-button query-button" bindtap="loadRecords">查询</button>
+    <button class="action-button export-button" bindtap="exportRoster">导出</button>
+  </view>
+
+  <view class="list-summary"><text>人员列表</text><text>共 {{records.length}} 人</text></view>
+  <view wx:if="{{!loading && !records.length}}" class="empty">暂无人员信息</view>
+  <view class="record-card card" wx:for="{{records}}" wx:key="id">
+    <view class="record-head"><view><text class="staff-no">{{item.staff_no}}</text><b>{{item.person_name}}</b></view><text class="employment {{item.employment_status === '离职' ? 'left' : ''}}">{{item.employment_status}}</text></view>
+    <view class="record-line">{{item.position}} · {{item.gender}} · {{item.age}}岁</view>
+    <view class="record-line">{{item.unit_name}} / {{item.department_name}}</view>
+    <view class="record-line">{{item.id_card}} · {{item.mobile}}</view>
+    <view class="record-actions"><text data-id="{{item.id}}" bindtap="editRecord">修改</text><text data-id="{{item.id}}" bindtap="deleteRecord">删除</text></view>
+  </view>
+</view>

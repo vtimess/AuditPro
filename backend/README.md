@@ -1,6 +1,6 @@
 # AuditPro FastAPI 后端
 
-当前版本为港审通小程序提供认证、首页、工作台、个人中心、工时打卡、安全备案、耗材采购和安全检查接口。
+当前版本为港审通小程序提供认证、首页、工作台、个人中心、工时打卡、人员管理、安全备案、耗材采购、安全检查和安全应急演练接口。
 
 ## 1. 环境要求
 
@@ -19,6 +19,12 @@
 - `DB_PASSWORD`：MySQL 密码。
 
 开发模式未提供 `WECHAT_APP_SECRET` 时，后端会使用固定测试账号 `DEV_WECHAT_OPENID`，方便本地联调。生产环境不会启用此降级方式。
+
+环境隔离约定：
+
+- 本地开发：`DB_NAME=audit_pro_test`，`FILE_ROOT=./uploads`。
+- 阿里云生产：`DB_NAME=audit_pro`，`FILE_ROOT=/data/auditpro/uploads`。
+- 生产容器将宿主机 `/home/admin/audit/uploads` 挂载到容器 `/data/auditpro/uploads`，避免重建容器后文件丢失。
 
 ## 3. 初始化数据库
 
@@ -61,6 +67,11 @@ DATABASE_URL=sqlite:///./auditpro_dev.db WECHAT_APP_SECRET= \
 - `POST /api/v1/attendance/punch`
 - `GET /api/v1/attendance/month?month=YYYY-MM`
 - `POST /api/v1/attendance/supplements`
+- `GET/POST /api/v1/personnel`
+- `GET /api/v1/personnel/template`
+- `POST /api/v1/personnel/import`
+- `GET /api/v1/personnel/export`
+- `GET/PUT/DELETE /api/v1/personnel/{id}`
 - `GET/POST /api/v1/police-filings`
 - `GET /api/v1/police-filings/export`
 - `GET/PUT/DELETE /api/v1/police-filings/{id}`
@@ -71,6 +82,10 @@ DATABASE_URL=sqlite:///./auditpro_dev.db WECHAT_APP_SECRET= \
 - `GET /api/v1/safety-inspections/rectifications`
 - `POST /api/v1/safety-inspections/hazards/{id}/rectify`
 - `POST /api/v1/safety-inspections/hazards/{id}/review`
+- `GET /api/v1/emergency-drills`
+- `POST /api/v1/emergency-drills/import`（支持 `.doc`、`.docx`、`.pdf`，单文件最大30MB）
+- `GET /api/v1/emergency-drills/{id}/preview`
+- `GET /api/v1/emergency-drills/{id}/export`
 - `POST /api/v1/files/upload`
 - `GET /api/v1/files/{id}`
 - `GET /health`
